@@ -1,0 +1,5 @@
+export const LOGGER_CONTEXT = {
+  HTTP: 'HTTP',
+  WEBSOCKET: 'WEBSOCKET',
+  QUEUE: 'QUEUE',
+};
