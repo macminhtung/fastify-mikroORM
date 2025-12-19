@@ -14,6 +14,7 @@ import { ProductModule } from '@/modules/product/product.module';
 import { SharedModule } from '@/modules/shared/shared.module';
 import { ElasticModule } from '@/modules/elastic/elastic.module';
 import { MikroORMModule } from '@/modules/mikro-orm/mikro-orm.module';
+import { RedisCacheModule } from '@/modules/redis-cache/redis-cache.module';
 
 @Module({
   imports: [
@@ -36,6 +37,11 @@ import { MikroORMModule } from '@/modules/mikro-orm/mikro-orm.module';
     // # ==> MIKRO_ORM MODULE <== #
     // #==========================#
     MikroORMModule,
+
+    // #============================#
+    // # ==> REDIS CACHE MODULE <== #
+    // #============================#
+    RedisCacheModule,
 
     // #========================#
     // # ==> GATEWAY MODULE <== #

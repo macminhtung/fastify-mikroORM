@@ -1,13 +1,24 @@
-import { MikroOrmModuleOptions } from '@mikro-orm/nestjs';
+import { MikroOrmModuleSyncOptions } from '@mikro-orm/nestjs';
 import { PostgreSqlDriver } from '@mikro-orm/postgresql';
 import { Migrator } from '@mikro-orm/migrations';
 import { MikroORMNamingStrategy } from '@/modules/mikro-orm/mikro-orm.naming';
 import * as dotenv from 'dotenv';
 import path from 'path';
 
-dotenv.config({ path: process.env.NODE_ENV ? `.${process.env.NODE_ENV}.env` : '.env' });
+dotenv.config({ path: process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : '.env' });
 
-export const config: MikroOrmModuleOptions = {
+const {
+  MIKROORM_HOST,
+  MIKROORM_PORT,
+  MIKROORM_USER,
+  MIKROORM_PASSWORD,
+  MIKROORM_DATABASE,
+  MIKROORM_DEBUG,
+} = process.env;
+
+console.log('MIKROORM_DATABASE =', MIKROORM_DATABASE);
+
+export const config: MikroOrmModuleSyncOptions = {
   driver: PostgreSqlDriver,
   namingStrategy: MikroORMNamingStrategy,
   extensions: [Migrator],
@@ -20,12 +31,12 @@ export const config: MikroOrmModuleOptions = {
     pathTs: path.join(process.cwd(), 'src/migrations'),
     glob: '!(*.d).{js,ts}',
   },
-  host: process.env.POSTGRES_HOST,
-  port: Number(process.env.POSTGRES_PORT) || 5432,
-  user: process.env.POSTGRES_USER || 'postgres',
-  password: process.env.POSTGRES_PASSWORD,
-  dbName: process.env.POSTGRES_DATABASE,
-  // debug: true,
+  host: MIKROORM_HOST,
+  port: Number(MIKROORM_PORT) || 5432,
+  user: MIKROORM_USER || 'postgres',
+  password: MIKROORM_PASSWORD,
+  dbName: MIKROORM_DATABASE,
+  debug: MIKROORM_DEBUG === 'true',
 };
 
 export default config;

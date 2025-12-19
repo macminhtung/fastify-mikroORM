@@ -1,15 +1,18 @@
 import { Injectable, OnModuleInit, Inject } from '@nestjs/common';
 import { MikroORM } from '@mikro-orm/core';
 
+const { NODE_ENV, MIKROORM_SYNCHRONIZE, MIKROORM_MIGRATIONS_RUN } = process.env;
+
 @Injectable()
 export class MikroORMService implements OnModuleInit {
   constructor(@Inject() private readonly orm: MikroORM) {}
 
   async onModuleInit() {
-    // Run table schemas
-    await this.orm.getSchemaGenerator().updateSchema({ dropTables: false, safe: true });
+    // Sync DB schema
+    if (NODE_ENV !== 'prod' && MIKROORM_SYNCHRONIZE === 'true')
+      await this.orm.getSchemaGenerator().updateSchema();
 
     // Run migration files
-    await this.orm.getMigrator().up();
+    if (MIKROORM_MIGRATIONS_RUN === 'true') await this.orm.getMigrator().up();
   }
 }

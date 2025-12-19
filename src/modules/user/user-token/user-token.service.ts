@@ -21,15 +21,20 @@ type TStoreNewTokenPair = (
         | EProcessUserTokenMode.RESET_AND_CREATE_NEW_TOKEN_PAIR
         | EProcessUserTokenMode.CREATE_NEW_TOKEN_PAIR;
       newRefreshToken: string;
+      newAccessToken: string;
     }
   | {
-      mode: EProcessUserTokenMode.DELETE_TOKEN_PAIR | EProcessUserTokenMode.REFRESH_ACCESS_TOKEN;
+      mode: EProcessUserTokenMode.DELETE_TOKEN_PAIR;
       refreshTokenId: string;
+    }
+  | {
+      mode: EProcessUserTokenMode.REFRESH_ACCESS_TOKEN;
+      refreshTokenId: string;
+      newAccessToken: string;
     }
 ) & {
   txRepository?: EntityRepository<UserTokenEntity>;
   userId: string;
-  newAccessToken: string;
 };
 
 @Injectable()
@@ -53,7 +58,7 @@ export class UserTokenService extends BaseService<UserTokenEntity> {
   // # ==> PROCESS USER TOKEN <== #
   // #============================#
   async processUserToken(payload: TStoreNewTokenPair) {
-    const { mode, txRepository, userId, newAccessToken } = payload;
+    const { mode, txRepository, userId } = payload;
 
     if (
       mode === EProcessUserTokenMode.DELETE_TOKEN_PAIR ||
@@ -70,7 +75,7 @@ export class UserTokenService extends BaseService<UserTokenEntity> {
           entityData: {
             user: this.entityManager.getReference(UserEntity, userId),
             type: ETokenType.ACCESS_TOKEN,
-            hashToken: this.generateHashToken(newAccessToken),
+            hashToken: this.generateHashToken(payload.newAccessToken),
             refreshTokenId,
           },
           txRepository,
@@ -87,6 +92,8 @@ export class UserTokenService extends BaseService<UserTokenEntity> {
       mode === EProcessUserTokenMode.RESET_AND_CREATE_NEW_TOKEN_PAIR ||
       mode === EProcessUserTokenMode.CREATE_NEW_TOKEN_PAIR
     ) {
+      const { newRefreshToken, newAccessToken } = payload;
+
       // Clear all tokens belong to the userId
       if (mode === EProcessUserTokenMode.RESET_AND_CREATE_NEW_TOKEN_PAIR)
         await this.delete({ filter: { userId }, txRepository });
@@ -96,7 +103,7 @@ export class UserTokenService extends BaseService<UserTokenEntity> {
         entityData: {
           user: this.entityManager.getReference(UserEntity, userId),
           type: ETokenType.REFRESH_TOKEN,
-          hashToken: this.generateHashToken(payload.newRefreshToken),
+          hashToken: this.generateHashToken(newRefreshToken),
         },
         txRepository,
       });

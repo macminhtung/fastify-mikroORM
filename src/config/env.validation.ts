@@ -8,11 +8,20 @@ export const ENV_VALIDATION = Joi.object({
   JWT_SECRET_KEY: Joi.string().required(),
   APP_URI: Joi.string().required(),
 
-  POSTGRES_HOST: Joi.string().required(),
-  POSTGRES_PORT: Joi.number().default(5432),
-  POSTGRES_USER: Joi.string().required(),
-  POSTGRES_PASSWORD: Joi.string().required(),
-  POSTGRES_DATABASE: Joi.string().required(),
+  MIKROORM_HOST: Joi.string().required(),
+  MIKROORM_PORT: Joi.number().default(5432),
+  MIKROORM_USER: Joi.string().required(),
+  MIKROORM_PASSWORD: Joi.string().required(),
+  MIKROORM_DATABASE: Joi.string().required(),
+  MIKROORM_DEBUG: Joi.boolean().default(true),
+  MIKROORM_MIGRATIONS_RUN: Joi.boolean().required(),
+  MIKROORM_SYNCHRONIZE: Joi.boolean().required(),
+
+  REDIS_HOST: Joi.string().required(),
+  REDIS_PORT: Joi.number().default(6379),
+  REDIS_USERNAME: Joi.string().optional().allow('', null),
+  REDIS_PASSWORD: Joi.string().optional().allow('', null),
+  REDIS_TTL: Joi.number().default(600000), // ==> 10 minutes
 
   ELASTIC_NODE: Joi.string().required(),
   ELASTIC_USER: Joi.string().required(),

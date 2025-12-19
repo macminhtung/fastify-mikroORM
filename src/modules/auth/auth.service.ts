@@ -216,12 +216,11 @@ export class AuthService extends BaseService<UserEntity> {
       },
     });
 
-    // Delete refreshToken and accessToken
-    await this.userTokenService.delete({
-      filter: [
-        { id: refreshTokenId }, // ==> Delete refreshToken
-        { refreshTokenId, userId: authId, type: ETokenType.ACCESS_TOKEN }, // ==> Delete accessToken
-      ],
+    //  Process user tokens
+    await this.userTokenService.processUserToken({
+      mode: EProcessUserTokenMode.DELETE_TOKEN_PAIR,
+      userId: authId,
+      refreshTokenId,
     });
 
     // Clear refreshToken into cookie
