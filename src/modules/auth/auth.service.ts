@@ -161,15 +161,13 @@ export class AuthService extends BaseService<UserEntity> {
     // Generate new accessToken
     const commonTokenPayload = { id, email };
     const newAccessToken = this.jwtService.generateToken({
-      type: ETokenType.ACCESS_TOKEN,
-      tokenPayload: { ...commonTokenPayload, isAccessToken: true },
+      tokenPayload: { ...commonTokenPayload, type: ETokenType.ACCESS_TOKEN },
       options: { expiresIn: 5 },
     });
 
     // Generate new refreshToken
     const newRefreshToken = this.jwtService.generateToken({
-      type: ETokenType.REFRESH_TOKEN,
-      tokenPayload: { ...commonTokenPayload, isRefreshToken: true },
+      tokenPayload: { ...commonTokenPayload, type: ETokenType.REFRESH_TOKEN },
       options: { expiresIn: '30 days' },
     });
 
@@ -276,8 +274,7 @@ export class AuthService extends BaseService<UserEntity> {
 
     // Generate new accessToken
     const newAccessToken = this.jwtService.generateToken({
-      type: ETokenType.ACCESS_TOKEN,
-      tokenPayload: { id, email, isAccessToken: true },
+      tokenPayload: { id, email, type: ETokenType.ACCESS_TOKEN },
       options: { expiresIn: 5 },
     });
 
@@ -344,15 +341,13 @@ export class AuthService extends BaseService<UserEntity> {
     // Generate accessToken
     const commonTokenPayload = { id: authId, email };
     const newAccessToken = this.jwtService.generateToken({
-      type: ETokenType.ACCESS_TOKEN,
-      tokenPayload: { ...commonTokenPayload, isAccessToken: true },
+      tokenPayload: { ...commonTokenPayload, type: ETokenType.ACCESS_TOKEN },
       options: { expiresIn: 5 },
     });
 
     // Generate refreshToken
     const newRefreshToken = this.jwtService.generateToken({
-      type: ETokenType.REFRESH_TOKEN,
-      tokenPayload: { ...commonTokenPayload, isRefreshToken: true },
+      tokenPayload: { ...commonTokenPayload, type: ETokenType.REFRESH_TOKEN },
       options: { expiresIn: '30 days' },
     });
 

@@ -7,7 +7,7 @@ import { UserService } from '@/modules/user/user.service';
 import { UserEntity } from '@/modules/user/user.entity';
 import { UpdateUserDto, GetUsersPaginatedDto } from '@/modules/user/dtos';
 
-@Controller(ETableName.USER)
+@Controller(ETableName.USERS)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 

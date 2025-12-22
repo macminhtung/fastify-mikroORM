@@ -1,9 +1,9 @@
 export enum ETableName {
-  GROUP = 'group',
-  USER = 'user',
-  ROLE = 'role',
-  PRODUCT = 'product',
-  USER_TOKEN = 'user_token',
-  GROUP_MEMBER = 'group_member',
-  INVITE_MEMBER = 'invite_member',
+  GROUPS = 'groups',
+  USERS = 'users',
+  ROLES = 'roles',
+  PRODUCTS = 'products',
+  USERS_TOKENS = 'users_tokens',
+  GROUPS_MEMBERS = 'groups_members',
+  INVITES_MEMBERS = 'invites_members',
 }

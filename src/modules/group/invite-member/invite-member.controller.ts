@@ -11,7 +11,7 @@ import {
   GetInviteMembersPaginatedDto,
 } from '@/modules/group/invite-member/dtos';
 
-@Controller(ETableName.INVITE_MEMBER)
+@Controller(ETableName.INVITES_MEMBERS)
 export class InviteMemberController {
   constructor(private readonly service: InviteMemberService) {}
 

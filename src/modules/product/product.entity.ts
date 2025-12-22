@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ETableName } from '@/common/enums';
 import { BaseEntity } from '@/common/base.entity';
 
-@Entity({ tableName: ETableName.PRODUCT })
+@Entity({ tableName: ETableName.PRODUCTS })
 export class ProductEntity extends BaseEntity {
   @ApiProperty()
   @PrimaryKey({ type: 'uuid' })

@@ -11,7 +11,7 @@ export enum EInviteMemberStatus {
   DECLINE = 'DECLINE',
 }
 
-@Entity({ tableName: ETableName.INVITE_MEMBER })
+@Entity({ tableName: ETableName.INVITES_MEMBERS })
 export class InviteMemberEntity extends BaseEntity {
   @ApiProperty()
   @PrimaryKey({ type: 'uuid' })

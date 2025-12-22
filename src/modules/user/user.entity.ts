@@ -15,7 +15,7 @@ import { RoleEntity } from '@/modules/user/role/role.entity';
 import { UserTokenEntity } from '@/modules/user/user-token/user-token.entity';
 import { GroupMemberEntity } from '@/modules/group/group-member/group-member.entity';
 
-@Entity({ tableName: ETableName.USER })
+@Entity({ tableName: ETableName.USERS })
 export class UserEntity extends BaseEntity {
   @ApiProperty()
   @PrimaryKey({ type: 'uuid' })

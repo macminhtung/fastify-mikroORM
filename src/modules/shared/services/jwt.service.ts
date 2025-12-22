@@ -6,17 +6,18 @@ import { ETokenType } from '@/common/enums';
 import type { VerifyErrors, SignOptions } from 'jsonwebtoken';
 import type { TEnvConfiguration } from '@/config';
 
+export const ACCESS_TOKEN_EXPIRES_IN = 10 * 60 * 1000; // ==> 10 minutes
+export const REFRESH_TOKEN_EXPIRES_IN = 30 * 24 * 60 * 60 * 1000; // ==> 30 days
+
 type TDecodeToken<T extends ETokenType> = { type: T; token: string };
 
-type TTokenPayload<T extends ETokenType> = (T extends ETokenType.ACCESS_TOKEN
-  ? { isAccessToken: true }
-  : { isRefreshToken: true }) & {
+type TTokenPayload<T extends ETokenType> = {
+  type: T;
   id: string;
   email: string;
 };
 
 type TGenerateToken<T extends ETokenType> = {
-  type: T;
   tokenPayload: TTokenPayload<T>;
   options?: SignOptions;
 };
@@ -39,7 +40,16 @@ export class JwtService {
 
   generateToken<T extends ETokenType>(payload: TGenerateToken<T>) {
     const { tokenPayload, options } = payload;
-    return jwt.sign(tokenPayload, this.jwtSecretKey, options || { expiresIn: '24h' });
+    return jwt.sign(
+      tokenPayload,
+      this.jwtSecretKey,
+      options || {
+        expiresIn:
+          tokenPayload.type === ETokenType.ACCESS_TOKEN
+            ? ACCESS_TOKEN_EXPIRES_IN
+            : REFRESH_TOKEN_EXPIRES_IN,
+      },
+    );
   }
 
   verifyToken<T extends ETokenType>(payload: TVerifyToken<T>) {
@@ -47,7 +57,7 @@ export class JwtService {
     // Verify the ACCESS_TOKEN type is valid
     if (
       type === ETokenType.ACCESS_TOKEN &&
-      !this.decodeToken({ type: ETokenType.ACCESS_TOKEN, token }).isAccessToken
+      this.decodeToken({ type: ETokenType.ACCESS_TOKEN, token }).type !== type
     ) {
       throw new BadRequestException({ message: ERROR_MESSAGES.ACCESS_TOKEN_INVALID });
     }
@@ -55,7 +65,7 @@ export class JwtService {
     // Verify the REFRESH_TOKEN type is valid
     else if (
       type === ETokenType.REFRESH_TOKEN &&
-      !this.decodeToken({ type: ETokenType.REFRESH_TOKEN, token }).isRefreshToken
+      this.decodeToken({ type: ETokenType.REFRESH_TOKEN, token }).type !== type
     ) {
       throw new BadRequestException({ message: ERROR_MESSAGES.REFRESH_TOKEN_INVALID });
     }

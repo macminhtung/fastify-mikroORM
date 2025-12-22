@@ -4,7 +4,7 @@ import { ETableName, ETokenType } from '@/common/enums';
 import { BaseEntity } from '@/common/base.entity';
 import { UserEntity } from '@/modules/user/user.entity';
 
-@Entity({ tableName: ETableName.USER_TOKEN })
+@Entity({ tableName: ETableName.USERS_TOKENS })
 @Index({ properties: ['userId', 'type', 'hashToken'] })
 export class UserTokenEntity extends BaseEntity {
   @ApiProperty()
