@@ -15,7 +15,7 @@ import { BaseEntity } from '@/common/base.entity';
 import { UserEntity } from '@/modules/user/user.entity';
 import { GroupMemberEntity } from '@/modules/group/group-member/group-member.entity';
 
-@Entity({ tableName: ETableName.GROUPS })
+@Entity({ tableName: ETableName.GROUP })
 @Unique({ properties: ['ownerId', 'name'] })
 export class GroupEntity extends BaseEntity {
   @ApiProperty()

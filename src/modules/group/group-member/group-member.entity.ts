@@ -5,7 +5,7 @@ import { BaseEntity } from '@/common/base.entity';
 import { UserEntity } from '@/modules/user/user.entity';
 import { GroupEntity } from '@/modules/group/group.entity';
 
-@Entity({ tableName: ETableName.GROUPS_MEMBERS })
+@Entity({ tableName: ETableName.GROUP_MEMBER })
 export class GroupMemberEntity extends BaseEntity {
   @ApiProperty()
   @PrimaryKey({ type: 'uuid' })

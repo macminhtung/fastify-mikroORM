@@ -1,20 +1,21 @@
 import { Controller, Post, Get, Put, Delete, Param, Query, Body } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
-import { ETableName, ERoleName } from '@/common/enums';
 import { Roles } from '@/decorators';
+import { ETableName } from '@/common/enums';
+import { DEFAULT_ROLES } from '@/common/constants';
 import { ApiOkResponsePaginated } from '@/common/dtos';
 import { UserService } from '@/modules/user/user.service';
 import { UserEntity } from '@/modules/user/user.entity';
 import { UpdateUserDto, GetUsersPaginatedDto } from '@/modules/user/dtos';
 
-@Controller(ETableName.USERS)
+@Controller(ETableName.USER)
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   // #=====================#
   // # ==> UPDATE USER <== #
   // #=====================#
-  @Roles([ERoleName.ADMIN])
+  @Roles([DEFAULT_ROLES.ADMIN.id])
   @ApiOkResponse({ type: UserEntity })
   @Put(':id')
   updateUser(@Param('id') id: string, @Body() payload: UpdateUserDto) {
@@ -24,7 +25,7 @@ export class UserController {
   // #==================#
   // # ==> GET USER <== #
   // #==================#
-  @Roles([ERoleName.ADMIN])
+  @Roles([DEFAULT_ROLES.ADMIN.id])
   @ApiOkResponsePaginated(UserEntity)
   @Get(':id')
   getUser(@Param('id') id: string) {
@@ -34,7 +35,7 @@ export class UserController {
   // #=====================#
   // # ==> DELETE USER <== #
   // #=====================#
-  @Roles([ERoleName.ADMIN])
+  @Roles([DEFAULT_ROLES.ADMIN.id])
   @ApiOkResponse({ type: UserEntity })
   @Delete(':id')
   deleteUser(@Param('id') id: string) {
@@ -44,7 +45,7 @@ export class UserController {
   // #======================#
   // # ==> RESTORE USER <== #
   // #======================#
-  @Roles([ERoleName.ADMIN])
+  @Roles([DEFAULT_ROLES.ADMIN.id])
   @ApiOkResponse({ type: UserEntity })
   @Post(':id')
   restoreUser(@Param('id') id: string) {
@@ -54,7 +55,7 @@ export class UserController {
   // #=============================#
   // # ==> GET PAGINATED USERS <== #
   // #=============================#
-  @Roles([ERoleName.ADMIN])
+  @Roles([DEFAULT_ROLES.ADMIN.id])
   @ApiOkResponsePaginated(UserEntity)
   @Get('/paginated')
   getPaginatedUsers(@Query() queryParams: GetUsersPaginatedDto) {

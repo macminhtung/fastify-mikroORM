@@ -15,11 +15,11 @@ export class RolesGuard implements CanActivate {
     if (isPublicAPI) return true;
 
     const request = context.switchToHttp().getRequest<TRequest>();
-    const roleName = request.authUser.role?.name || '';
+    const roleId = request.authUser.roleId || 0;
 
-    // Get context scopeNames
-    const contextRoleNames = this.reflector.get<string[]>(EMetadataKey.ROLES, contextFunc);
+    // Get context roleIds
+    const contextRoleIds = this.reflector.get<number[]>(EMetadataKey.ROLES, contextFunc);
 
-    return contextRoleNames.includes(roleName);
+    return contextRoleIds.includes(roleId);
   }
 }

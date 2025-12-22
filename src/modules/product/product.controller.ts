@@ -1,6 +1,7 @@
 import { Controller, Post, Put, Delete, Get, Param, Query, Body } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
-import { ETableName, ERoleName } from '@/common/enums';
+import { ETableName } from '@/common/enums';
+import { DEFAULT_ROLES } from '@/common/constants';
 import { Roles } from '@/decorators';
 import { Public } from '@/decorators';
 import { ProductService } from '@/modules/product/product.service';
@@ -12,14 +13,14 @@ import {
   PaginatedResponseDto,
 } from '@/common/dtos';
 
-@Controller(ETableName.PRODUCTS)
+@Controller(ETableName.PRODUCT)
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   // #========================#
   // # ==> CREATE PRODUCT <== #
   // #========================#
-  @Roles([ERoleName.ADMIN])
+  @Roles([DEFAULT_ROLES.ADMIN.id])
   @ApiOkResponse({ type: ProductEntity })
   @Post()
   createProduct(@Body() payload: CreateProductDto): Promise<ProductEntity> {
@@ -29,7 +30,7 @@ export class ProductController {
   // #========================#
   // # ==> UPDATE PRODUCT <== #
   // #========================#
-  @Roles([ERoleName.ADMIN])
+  @Roles([DEFAULT_ROLES.ADMIN.id])
   @ApiOkResponse({ type: ProductEntity })
   @Put(':id')
   updateProduct(
@@ -42,7 +43,7 @@ export class ProductController {
   // #========================#
   // # ==> DELETE PRODUCT <== #
   // #========================#
-  @Roles([ERoleName.ADMIN])
+  @Roles([DEFAULT_ROLES.ADMIN.id])
   @ApiOkResponse({ type: String })
   @Delete(':id')
   deleteProduct(@Param('id') id: string): Promise<string> {

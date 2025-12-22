@@ -60,7 +60,6 @@ export class AuthService extends BaseService<UserEntity> {
     const existedUser = await this.checkExist({
       filter: { id: userId, userTokens: { type, hashToken } },
       options: {
-        populate: ['role'],
         fields: [
           'id',
           'avatar',
@@ -70,7 +69,6 @@ export class AuthService extends BaseService<UserEntity> {
           'lastName',
           'roleId',
           'isEmailVerified',
-          'role',
         ],
       },
       errorMessage,

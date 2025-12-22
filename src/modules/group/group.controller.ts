@@ -7,7 +7,7 @@ import { GroupEntity } from '@/modules/group/group.entity';
 import { CreateGroupDto } from '@/modules/group/dtos';
 import type { TRequest } from '@/common/types';
 
-@Controller(ETableName.GROUPS)
+@Controller(ETableName.GROUP)
 export class GroupController {
   constructor(private readonly groupService: GroupService) {}
 

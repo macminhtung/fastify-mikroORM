@@ -9,7 +9,7 @@ type TProductDocument = Pick<ProductEntity, 'id' | 'name' | 'description'>;
 export class SearchProductService {
   constructor(private readonly service: ElasticsearchService) {}
 
-  private readonly indexName = ETableName.PRODUCTS;
+  private readonly indexName = ETableName.PRODUCT;
 
   // #==========================#
   // # ==> INITIALIZE INDEX <== #

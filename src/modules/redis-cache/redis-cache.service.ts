@@ -58,7 +58,7 @@ export class RedisCacheService implements OnModuleInit {
     const { userId, hashToken } = payload;
 
     // Get user cache from redis
-    const userCacheKey = `${ETableName.USERS}/${userId}`;
+    const userCacheKey = `${ETableName.USER}/${userId}`;
     const userCache = await this.get<UserEntity>(userCacheKey);
 
     // CASE: Have no userCache
@@ -87,7 +87,7 @@ export class RedisCacheService implements OnModuleInit {
     const ttl = type === ETokenType.ACCESS_TOKEN ? ACCESS_TOKEN_EXPIRES_IN : USER_TTL;
 
     // Get cache user from redis
-    const userCacheKey = `${ETableName.USERS}/${user.id}`;
+    const userCacheKey = `${ETableName.USER}/${user.id}`;
     const userCache = await this.get<UserEntity>(userCacheKey);
 
     // CASE: Have no userCache ==> Set new authCache
@@ -107,7 +107,7 @@ export class RedisCacheService implements OnModuleInit {
     isDeleteUserCache?: boolean;
   }): Promise<void> {
     const { userId, hashTokens, isDeleteUserCache } = payload;
-    const cacheUserKey = `${ETableName.USERS}/${userId}`;
+    const cacheUserKey = `${ETableName.USER}/${userId}`;
     if (isDeleteUserCache) await this.delete(cacheUserKey);
 
     // Delete auth cache keys

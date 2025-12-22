@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ETableName, ERoleName } from '@/common/enums';
 import { BaseEntity } from '@/common/base.entity';
 
-@Entity({ tableName: ETableName.ROLES })
+@Entity({ tableName: ETableName.ROLE })
 export class RoleEntity extends BaseEntity {
   @ApiProperty()
   @PrimaryKey({ type: 'int4' })
