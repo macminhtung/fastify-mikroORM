@@ -7,9 +7,10 @@ import { RoleEntity } from '@/modules/user/role/role.entity';
 import { RoleService } from '@/modules/user/role/role.service';
 import { UserTokenEntity } from '@/modules/user/user-token/user-token.entity';
 import { UserTokenService } from '@/modules/user/user-token/user-token.service';
+import { RedisCacheModule } from '@/modules/redis-cache/redis-cache.module';
 
 @Module({
-  imports: [MikroOrmModule.forFeature([UserEntity, RoleEntity, UserTokenEntity])],
+  imports: [MikroOrmModule.forFeature([UserEntity, RoleEntity, UserTokenEntity]), RedisCacheModule],
   controllers: [UserController],
   providers: [UserService, RoleService, UserTokenService],
   exports: [UserService, RoleService, UserTokenService],

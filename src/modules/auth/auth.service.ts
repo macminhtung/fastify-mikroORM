@@ -11,6 +11,7 @@ import { UserService } from '@/modules/user/user.service';
 import { UserEntity } from '@/modules/user/user.entity';
 import { RoleEntity } from '@/modules/user/role/role.entity';
 import { UserTokenEntity } from '@/modules/user/user-token/user-token.entity';
+import { AuthCacheService } from '@/modules/redis-cache/auth-cache.service';
 import {
   UserTokenService,
   EProcessUserTokenMode,
@@ -34,6 +35,7 @@ export class AuthService extends BaseService<UserEntity> {
     public readonly repository: EntityRepository<UserEntity>,
 
     private userService: UserService,
+    private authCacheService: AuthCacheService,
     private userTokenService: UserTokenService,
     private jwtService: JwtService,
     private awsS3Service: AwsS3Service,
@@ -41,10 +43,10 @@ export class AuthService extends BaseService<UserEntity> {
     super(repository);
   }
 
-  // #=====================#
-  // # ==> CHECK TOKEN <== #
-  // #=====================#
-  async checkToken<T extends ETokenType>(
+  // #==================================#
+  // # ==> VERIFY TOKEN AND CACHING <== #
+  // #==================================#
+  async verifyTokenAndCaching<T extends ETokenType>(
     payload: TVerifyToken<T> & { errorMessage?: string },
   ): Promise<UserEntity> {
     const { type, token, errorMessage } = payload;
@@ -55,6 +57,15 @@ export class AuthService extends BaseService<UserEntity> {
 
     // Generate hashToken
     const hashToken = this.userTokenService.generateHashToken(token);
+
+    // Get token cache data from redis
+    const tokenCache = await this.authCacheService.getTokenCache({
+      userId: decodeToken.id,
+      hashToken,
+    });
+
+    // CASE: Token cache data already exists ==> Return cache data
+    if (tokenCache) return tokenCache;
 
     // Check user already exists
     const existedUser = await this.checkExist({
@@ -73,6 +84,9 @@ export class AuthService extends BaseService<UserEntity> {
       },
       errorMessage,
     });
+
+    // Set the token cache data to redis
+    await this.authCacheService.setTokenCache({ user: existedUser, type, hashToken });
 
     return existedUser;
   }
@@ -144,7 +158,7 @@ export class AuthService extends BaseService<UserEntity> {
     // Check email already exists
     const existedUser = await this.checkExist({
       filter: { email, isEmailVerified: true },
-      options: { fields: ['id', 'password'] },
+      options: { fields: ['id', 'email', 'password', 'firstName', 'lastName', 'roleId'] },
     });
     const { id } = existedUser;
 
@@ -160,13 +174,11 @@ export class AuthService extends BaseService<UserEntity> {
     const commonTokenPayload = { id, email };
     const newAccessToken = this.jwtService.generateToken({
       tokenPayload: { ...commonTokenPayload, type: ETokenType.ACCESS_TOKEN },
-      options: { expiresIn: 5 },
     });
 
     // Generate new refreshToken
     const newRefreshToken = this.jwtService.generateToken({
       tokenPayload: { ...commonTokenPayload, type: ETokenType.REFRESH_TOKEN },
-      options: { expiresIn: '30 days' },
     });
 
     // Start transaction
@@ -183,7 +195,7 @@ export class AuthService extends BaseService<UserEntity> {
         await this.userTokenService.processUserToken({
           mode: EProcessUserTokenMode.CREATE_NEW_TOKEN_PAIR,
           txRepository,
-          userId: id,
+          user: existedUser,
           newRefreshToken,
           newAccessToken,
         });
@@ -235,45 +247,50 @@ export class AuthService extends BaseService<UserEntity> {
     const refreshToken = req.cookies[ECookieKey.REFRESH_TOKEN]!;
     const { accessToken } = payload;
 
-    // Check refreshToken valid
-    const { id, email } = await this.checkToken({
+    // [JWT] Verify refreshToken
+    const decodeToken = this.jwtService.verifyToken({
       type: ETokenType.REFRESH_TOKEN,
       token: refreshToken,
-      errorMessage: ERROR_MESSAGES.REFRESH_TOKEN_INVALID,
     });
+    const { id: userId, email } = decodeToken;
 
-    // Check the refreshToken already exist
-    const { id: refreshTokenId } = await this.userTokenService.checkExist({
-      filter: {
-        userId: id,
-        type: ETokenType.REFRESH_TOKEN,
-        hashToken: this.userTokenService.generateHashToken(refreshToken),
-      },
-    });
-
-    // Check the accessToken already exist
-    await this.userTokenService.checkExist({
-      filter: {
-        userId: id,
-        type: ETokenType.ACCESS_TOKEN,
-        hashToken: this.userTokenService.generateHashToken(accessToken),
-        refreshTokenId,
-      },
-      errorMessage: ERROR_MESSAGES.REFRESH_TOKEN_INVALID,
-    });
-
-    // Verify accessToken has expired
+    // [JWT] Verify accessToken has expired
     try {
-      await this.checkToken({ type: ETokenType.ACCESS_TOKEN, token: accessToken });
+      // ==> Should be throw jwt expired error
+      this.jwtService.verifyToken({ type: ETokenType.ACCESS_TOKEN, token: accessToken });
+
+      // ==> Not throw jwt expired ==> This means the token is still alive
+      return { accessToken: accessToken };
     } catch (error) {
       if (error.message !== 'jwt expired')
         throw new BadRequestException({ message: ERROR_MESSAGES.ACCESS_TOKEN_INVALID });
     }
 
+    // [DATABASE] Check the refreshToken already exists
+    const { id: refreshTokenId } = await this.userTokenService.checkExist({
+      filter: {
+        userId,
+        type: ETokenType.REFRESH_TOKEN,
+        hashToken: this.userTokenService.generateHashToken(refreshToken),
+      },
+      errorMessage: ERROR_MESSAGES.REFRESH_TOKEN_INVALID,
+    });
+
+    // [DATABASE] Check the accessToken already exists
+    const hashAccessToken = this.userTokenService.generateHashToken(accessToken);
+    await this.userTokenService.checkExist({
+      filter: {
+        userId,
+        type: ETokenType.ACCESS_TOKEN,
+        hashToken: hashAccessToken,
+        refreshTokenId,
+      },
+      errorMessage: ERROR_MESSAGES.ACCESS_TOKEN_INVALID,
+    });
+
     // Generate new accessToken
     const newAccessToken = this.jwtService.generateToken({
-      tokenPayload: { id, email, type: ETokenType.ACCESS_TOKEN },
-      options: { expiresIn: 5 },
+      tokenPayload: { id: userId, email, type: ETokenType.ACCESS_TOKEN },
     });
 
     // Start transaction
@@ -290,9 +307,10 @@ export class AuthService extends BaseService<UserEntity> {
         await this.userTokenService.processUserToken({
           mode: EProcessUserTokenMode.REFRESH_ACCESS_TOKEN,
           txRepository,
-          userId: id,
+          userId,
           refreshTokenId,
           newAccessToken,
+          oldHashAccessToken: hashAccessToken,
         });
       },
     );
@@ -310,13 +328,6 @@ export class AuthService extends BaseService<UserEntity> {
   ): Promise<SignInResponseDto> {
     const { id: authId, email, password } = req.authUser;
     const { oldPassword, newPassword } = payload;
-
-    // Check refreshToken valid
-    const refreshToken = req.cookies[ECookieKey.REFRESH_TOKEN]!;
-    await this.checkToken({
-      type: ETokenType.REFRESH_TOKEN,
-      token: refreshToken,
-    });
 
     // Compare hashPassword with oldPassword
     const isCorrectPassword = await this.compareHashPassword({
@@ -340,13 +351,11 @@ export class AuthService extends BaseService<UserEntity> {
     const commonTokenPayload = { id: authId, email };
     const newAccessToken = this.jwtService.generateToken({
       tokenPayload: { ...commonTokenPayload, type: ETokenType.ACCESS_TOKEN },
-      options: { expiresIn: 5 },
     });
 
     // Generate refreshToken
     const newRefreshToken = this.jwtService.generateToken({
       tokenPayload: { ...commonTokenPayload, type: ETokenType.REFRESH_TOKEN },
-      options: { expiresIn: '30 days' },
     });
 
     // Start transaction
@@ -371,7 +380,7 @@ export class AuthService extends BaseService<UserEntity> {
         await this.userTokenService.processUserToken({
           mode: EProcessUserTokenMode.RESET_AND_CREATE_NEW_TOKEN_PAIR,
           txRepository: txTokenManagementRepository,
-          userId: authId,
+          user: req.authUser,
           newRefreshToken,
           newAccessToken,
         });

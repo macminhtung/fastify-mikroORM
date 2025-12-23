@@ -54,8 +54,8 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     const accessToken = `${client.handshake.auth?.token}`.replace('Bearer ', '');
 
     try {
-      // Check the accessToken
-      const existedUser = await this.authService.checkToken({
+      // Verify the accessToken and caching
+      const existedUser = await this.authService.verifyTokenAndCaching({
         type: ETokenType.ACCESS_TOKEN,
         token: accessToken,
       });

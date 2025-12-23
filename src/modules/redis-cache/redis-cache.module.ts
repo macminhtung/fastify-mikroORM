@@ -4,6 +4,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import KeyvRedis, { RedisClientOptions } from '@keyv/redis';
 import type { TEnvConfiguration } from '@/config';
 import { RedisCacheService } from '@/modules/redis-cache/redis-cache.service';
+import { AuthCacheService } from '@/modules/redis-cache/auth-cache.service';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { RedisCacheService } from '@/modules/redis-cache/redis-cache.service';
       },
     }),
   ],
-  providers: [RedisCacheService],
-  exports: [RedisCacheService],
+  providers: [RedisCacheService, AuthCacheService],
+  exports: [RedisCacheService, AuthCacheService],
 })
 export class RedisCacheModule {}

@@ -23,10 +23,10 @@ export class AuthGuard implements CanActivate {
     const isPublicAPI = this.reflector.get<boolean>(EMetadataKey.PUBLIC, context.getHandler());
     if (isPublicAPI && !accessToken) return true;
 
-    // #==================================#
-    // # ==> CASE: CHECK ACCESS TOKEN <== #
-    // #==================================#
-    const authUser = await this.authService.checkToken({
+    // #===============================================#
+    // # ==> CASE: VERIFY ACCESS TOKEN AND CACHING <== #
+    // #===============================================#
+    const authUser = await this.authService.verifyTokenAndCaching({
       type: ETokenType.ACCESS_TOKEN,
       token: accessToken,
     });

@@ -15,7 +15,6 @@ export const ENV_VALIDATION = Joi.object({
   MIKROORM_DATABASE: Joi.string().required(),
   MIKROORM_DEBUG: Joi.boolean().default(true),
   MIKROORM_MIGRATIONS_RUN: Joi.boolean().required(),
-  MIKROORM_SYNCHRONIZE: Joi.boolean().required(),
 
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().default(6379),
