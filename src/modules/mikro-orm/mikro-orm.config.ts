@@ -16,8 +16,6 @@ const {
   MIKROORM_DEBUG,
 } = process.env;
 
-console.log('MIKROORM_DATABASE =', MIKROORM_DATABASE);
-
 export const config: MikroOrmModuleSyncOptions = {
   driver: PostgreSqlDriver,
   namingStrategy: MikroORMNamingStrategy,
