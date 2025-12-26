@@ -9,13 +9,14 @@ import {
   Min,
   ArrayMinSize,
   ArrayMaxSize,
-  IsBoolean,
   registerDecorator,
   ValidationOptions,
   ValidationArguments,
+  IsUUID,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { EOrder } from '@/common/enums';
+import { EOrder, EBoolean } from '@/common/enums';
+import { Transform } from 'class-transformer';
 
 export const NUM_LIMIT_RECORDS = 100000;
 export const DEFAULT_PAGE_NUM = 1;
@@ -67,13 +68,15 @@ export class GetPaginatedRecordsDto {
   @IsString()
   keySearch?: string;
 
-  @ApiPropertyOptional({ type: 'boolean', default: false })
+  @ApiPropertyOptional({ enum: EBoolean })
   @IsOptional()
-  @IsBoolean()
-  isDeleted?: boolean;
+  @IsEnum(EBoolean)
+  isDeleted?: EBoolean;
 
   @ApiPropertyOptional({ type: Array<string> })
   @IsOptional()
+  @Transform(({ value }) => (value ? (Array.isArray(value) ? value : [value]) : undefined))
+  @IsUUID('7', { each: true })
   @IsArray()
   @ArrayMinSize(1)
   @ArrayMaxSize(100)
@@ -81,6 +84,8 @@ export class GetPaginatedRecordsDto {
 
   @ApiPropertyOptional({ type: Array<string> })
   @IsOptional()
+  @Transform(({ value }) => (value ? (Array.isArray(value) ? value : [value]) : undefined))
+  @IsUUID('7', { each: true })
   @IsArray()
   @ArrayMinSize(1)
   @ArrayMaxSize(100)
@@ -97,8 +102,8 @@ export class GetPaginatedRecordsDto {
   @IsDateString()
   createdTo?: string;
 
-  @ApiPropertyOptional({ type: 'boolean', default: false })
+  @ApiPropertyOptional({ enum: EBoolean })
   @IsOptional()
-  @IsBoolean()
-  isSelectAll?: boolean;
+  @IsEnum(EBoolean)
+  isSelectAll?: EBoolean;
 }

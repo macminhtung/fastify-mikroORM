@@ -22,7 +22,7 @@ export class UserEntity extends BaseEntity {
   id: string;
 
   @ApiProperty()
-  @Property({ default: '' })
+  @Property({ length: 500, default: '' })
   avatar?: string;
 
   @ApiProperty()
@@ -33,18 +33,18 @@ export class UserEntity extends BaseEntity {
   password: string;
 
   @ApiProperty()
-  @Property()
+  @Property({ length: 100, default: '' })
   @Index()
-  firstName: string;
+  firstName?: string;
 
   @ApiProperty()
-  @Property()
+  @Property({ length: 100, default: '' })
   @Index()
-  lastName: string;
+  lastName?: string;
 
   @ApiProperty()
   @Property({ default: false })
-  isEmailVerified: boolean;
+  isEmailVerified?: boolean;
 
   // ==> [RELATION] COLUMNS <==
   @ApiProperty({ type: 'integer' })

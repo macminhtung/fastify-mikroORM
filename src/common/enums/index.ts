@@ -4,4 +4,5 @@ export * from './metadata-key';
 export * from './order';
 export * from './cookie-key';
 export * from './token-type';
-export * from './socket.enum';
+export * from './socket';
+export * from './boolean';

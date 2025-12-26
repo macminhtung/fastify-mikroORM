@@ -1,4 +1,9 @@
-import { BadRequestException, ValidationError, ValidationPipe } from '@nestjs/common';
+import {
+  ArgumentMetadata,
+  BadRequestException,
+  ValidationError,
+  ValidationPipe,
+} from '@nestjs/common';
 
 export class HandleTreeError {
   constructor(validationErrors: ValidationError[]) {
@@ -31,13 +36,24 @@ export class ApiValidationPipe extends ValidationPipe {
     super({
       whitelist: true,
       transform: true,
-      transformOptions: {
-        enableImplicitConversion: true,
-      },
+      transformOptions: { enableImplicitConversion: true },
     });
   }
 
-  exceptionFactory = (validationErrors: ValidationError[]) => {
-    return new BadRequestException(new HandleTreeError(validationErrors).processValidationErrors());
+  async transform(value: unknown, metadata: ArgumentMetadata) {
+    const transformed = await super.transform(value, metadata);
+
+    // Clean undefined fields
+    if (transformed && typeof transformed === 'object') {
+      Object.keys(transformed).forEach((key) => {
+        if (transformed[key] === undefined) delete transformed[key];
+      });
+    }
+
+    return transformed;
+  }
+
+  exceptionFactory = (errors: ValidationError[]) => {
+    return new BadRequestException(new HandleTreeError(errors).processValidationErrors());
   };
 }

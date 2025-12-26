@@ -6,8 +6,9 @@ import { ETokenType } from '@/common/enums';
 import type { VerifyErrors, SignOptions } from 'jsonwebtoken';
 import type { TEnvConfiguration } from '@/config';
 
-export const ACCESS_TOKEN_EXPIRES_IN = 10 * 60 * 1000; // ==> 10 minutes
-export const REFRESH_TOKEN_EXPIRES_IN = 30 * 24 * 60 * 60 * 1000; // ==> 30 days
+// export const ACCESS_TOKEN_EXPIRES_IN = 10 * 60; // ==> 10 minutes
+export const ACCESS_TOKEN_EXPIRES_IN = 5; // ==> 5 seconds
+export const REFRESH_TOKEN_EXPIRES_IN = 30 * 24 * 60 * 60; // ==> 30 days
 
 type TDecodeToken<T extends ETokenType> = { type: T; token: string };
 
@@ -32,12 +33,18 @@ export class JwtService {
   }
   private jwtSecretKey: TEnvConfiguration['jwtSecretKey'];
 
+  // #======================#
+  // # ==> DECODE TOKEN <== #
+  // #======================#
   decodeToken<T extends ETokenType>(payload: TVerifyToken<T>): TTokenPayload<T>;
   decodeToken<T extends ETokenType>(payload: TVerifyToken<T>) {
     const decoded = jwt.decode(payload.token, { json: true }) || {};
     return decoded;
   }
 
+  // #========================#
+  // # ==> GENERATE TOKEN <== #
+  // #========================#
   generateToken<T extends ETokenType>(payload: TGenerateToken<T>) {
     const { tokenPayload, options } = payload;
     return jwt.sign(
@@ -52,6 +59,9 @@ export class JwtService {
     );
   }
 
+  // #======================#
+  // # ==> VERIFY TOKEN <== #
+  // #======================#
   verifyToken<T extends ETokenType>(payload: TVerifyToken<T>) {
     const { type, token } = payload;
     // Verify the ACCESS_TOKEN type is valid

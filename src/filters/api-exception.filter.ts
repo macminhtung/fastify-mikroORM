@@ -1,5 +1,12 @@
-import { ArgumentsHost, Catch, ExceptionFilter, Logger } from '@nestjs/common';
-import { LOGGER_CONTEXT } from '@/common/constants';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpException,
+  Logger,
+  HttpStatus,
+} from '@nestjs/common';
+import { ERROR_MESSAGES } from '@/common/constants';
 
 export const formatLoggerMessage = (stack: string, message: string) => {
   const errorLines: string[] = stack?.split('\n')?.slice(1, 4);
@@ -14,21 +21,31 @@ export const formatLoggerMessage = (stack: string, message: string) => {
 export class ApiExceptionsFilter implements ExceptionFilter {
   constructor(private logger: Logger) {}
 
-  catch(exception: { status: number; message: string; stack: string }, host: ArgumentsHost) {
-    // Format logger message
-    const { status = 400, message, stack } = exception;
+  catch(exception: HttpException & { code: number }, host: ArgumentsHost) {
+    const response = host.switchToHttp().getResponse();
+    const { code, message, stack = '' } = exception;
 
-    // Format the error message
+    // CASE: Database exception
+    if (code && code.toString().length === 5) {
+      const { message } = exception;
+
+      // Display database error
+      this.logger.error(`${code} - ${message}`, 'DATABASE');
+
+      return response.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: ERROR_MESSAGES.DATABASE_ERROR,
+      });
+    }
+
+    // CASE: HttpException ==> Format the error message
     const loggerMessage = formatLoggerMessage(stack, message);
 
     // Display error message
-    if (status >= 500) this.logger.error(loggerMessage, LOGGER_CONTEXT.HTTP);
-    else this.logger.warn(loggerMessage, LOGGER_CONTEXT.HTTP);
+    const status = exception?.getStatus ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+    if (status >= 500) this.logger.error(loggerMessage);
+    else this.logger.warn(loggerMessage);
 
-    const response = host.switchToHttp().getResponse();
-    return response.status(status).send({
-      statusCode: status,
-      message,
-    });
+    return response.status(status).send({ statusCode: status, message });
   }
 }

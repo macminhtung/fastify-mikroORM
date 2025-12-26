@@ -6,4 +6,5 @@ export const ERROR_MESSAGES = {
   PERMISSION_INVALID: 'Permission invalid',
   NOT_FOUND: 'Not found',
   ALREADY_EXISTS: 'Already exists',
+  DATABASE_ERROR: 'Database error',
 };

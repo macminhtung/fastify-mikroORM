@@ -118,7 +118,7 @@ export class UserTokenService extends BaseService<UserTokenEntity> {
       );
 
       // Delete the token pair
-      await this.delete({ filter: [tokens.map((i) => i.id)], txRepository });
+      await this.delete({ filter: tokens.map((i) => i.id), txRepository });
 
       // Delete token pair caches
       const delHashTokens = tokens.map(({ hashToken }) => hashToken);
@@ -142,6 +142,9 @@ export class UserTokenService extends BaseService<UserTokenEntity> {
         // Delete all token caches
         const delHashTokens = allTokens.map(({ hashToken }) => hashToken);
         await this.authCacheService.deleteTokenCache({ userId, hashTokens: delHashTokens });
+
+        // Update hashPassword for userCache
+        await this.authCacheService.setUserCache(user);
       }
 
       // Create [NEW] refreshToken

@@ -23,6 +23,13 @@ export class AuthCacheService {
     return await this.redisCacheService.get<UserEntity | undefined>(`${ETableName.USER}/${userId}`);
   }
 
+  // #========================#
+  // # ==> SET USER CACHE <== #
+  // #========================#
+  async setUserCache(user: UserEntity): Promise<void> {
+    await this.redisCacheService.set(`${ETableName.USER}/${user.id}`, user, DEFAULT_TTL);
+  }
+
   // #=========================#
   // # ==> GET TOKEN CACHE <== #
   // #=========================#
@@ -60,7 +67,7 @@ export class AuthCacheService {
       await this.redisCacheService.set<boolean>(
         tokenCacheKey,
         true,
-        type === ETokenType.ACCESS_TOKEN ? ACCESS_TOKEN_EXPIRES_IN : DEFAULT_TTL,
+        type === ETokenType.ACCESS_TOKEN ? ACCESS_TOKEN_EXPIRES_IN * 1000 : DEFAULT_TTL,
       );
     }
 
@@ -73,7 +80,7 @@ export class AuthCacheService {
         this.redisCacheService.set<boolean>(
           `${userCacheKey}/${hashAccessToken}`,
           true,
-          ACCESS_TOKEN_EXPIRES_IN,
+          ACCESS_TOKEN_EXPIRES_IN * 1000,
         ),
         this.redisCacheService.set<boolean>(
           `${userCacheKey}/${hashRefreshToken}`,
@@ -87,7 +94,7 @@ export class AuthCacheService {
     const userCache = await this.redisCacheService.get<UserEntity>(userCacheKey);
 
     // CASE: Have no userCache ==> Set new authCache
-    if (!userCache) await this.redisCacheService.set<UserEntity>(userCacheKey, user, DEFAULT_TTL);
+    if (!userCache) await this.setUserCache(user);
   }
 
   // #============================#

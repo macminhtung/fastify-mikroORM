@@ -6,11 +6,21 @@ import { DEFAULT_ROLES } from '@/common/constants';
 import { ApiOkResponsePaginated } from '@/common/dtos';
 import { UserService } from '@/modules/user/user.service';
 import { UserEntity } from '@/modules/user/user.entity';
-import { UpdateUserDto, GetUsersPaginatedDto } from '@/modules/user/dtos';
+import { CreateUserDto, UpdateUserDto, GetUsersPaginatedDto } from '@/modules/user/dtos';
 
 @Controller(ETableName.USER)
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  // #=====================#
+  // # ==> CREATE USER <== #
+  // #=====================#
+  @Roles([DEFAULT_ROLES.ADMIN.id])
+  @ApiOkResponse({ type: UserEntity })
+  @Post()
+  createUser(@Body() payload: CreateUserDto) {
+    return this.userService.createUser(payload);
+  }
 
   // #=====================#
   // # ==> UPDATE USER <== #

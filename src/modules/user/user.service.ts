@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
+import { hash, compare } from 'bcrypt';
 import { BaseService } from '@/common/base.service';
-import { UserEntity } from '@/modules/user/user.entity';
-import { UpdateUserDto, GetUsersPaginatedDto } from '@/modules/user/dtos';
 import { DEFAULT_ROLES } from '@/common/constants';
 import { PaginatedResponseDto } from '@/common/dtos';
+import { UserEntity } from '@/modules/user/user.entity';
+import { CreateUserDto, UpdateUserDto, GetUsersPaginatedDto } from '@/modules/user/dtos';
+import { RoleEntity } from './role/role.entity';
 
 @Injectable()
 export class UserService extends BaseService<UserEntity> {
@@ -14,6 +16,54 @@ export class UserService extends BaseService<UserEntity> {
     public readonly repository: EntityRepository<UserEntity>,
   ) {
     super(repository);
+  }
+
+  // #=========================#
+  // # ==> RANDOM PASSWORD <== #
+  // #=========================#
+  randomPassword(length = 6) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    return Array.from({ length }, () => chars.charAt(Math.floor(Math.random() * 62))).join('');
+  }
+
+  // #================================#
+  // # ==> GENERATE HASH PASSWORD <== #
+  // #================================#
+  async generateHashPassword(password: string) {
+    const hashPassword = await hash(password, 10);
+    return hashPassword;
+  }
+
+  // #===============================#
+  // # ==> COMPARE HASH PASSWORD <== #
+  // #===============================#
+  async compareHashPassword(payload: { password: string; hashPassword: string }) {
+    const { password, hashPassword } = payload;
+    return await compare(password, hashPassword);
+  }
+
+  // #=====================#
+  // # ==> CREATE USER <== #
+  // #=====================#
+  async createUser(payload: CreateUserDto) {
+    const { email, roleId } = payload;
+    // Prevent creating if email has conflict
+    await this.checkConflict({ filter: { email } });
+
+    // Hash the password
+    const temporaryPassword = this.randomPassword(); // TODO: ==> Send the temporaryPassword via email
+    const hashPassword = await this.generateHashPassword(temporaryPassword);
+
+    // Create newUser
+    const newUser = await this.create({
+      entityData: {
+        ...payload,
+        password: hashPassword,
+        role: this.entityManager.getReference(RoleEntity, roleId),
+      },
+    });
+
+    return newUser;
   }
 
   // #=====================#
